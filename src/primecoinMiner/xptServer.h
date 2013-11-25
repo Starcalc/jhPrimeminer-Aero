@@ -26,7 +26,11 @@ typedef struct
 
 typedef struct _xptServer_t 
 {
+#ifdef _WIN32
 	SOCKET acceptSocket;
+#else
+	int acceptSocket;
+#endif
 	simpleList_t* list_connections;
 	xptPacketbuffer_t* sendBuffer; // shared buffer for sending data
 	// last known block height (for new block detection)
@@ -39,7 +43,11 @@ typedef struct _xptServer_t
 typedef struct  
 {
 	xptServer_t* xptServer;
+#ifdef _WIN32
 	SOCKET clientSocket;
+#else
+	int clientSocket;
+#endif
 	bool disconnected;
 	// recv buffer
 	xptPacketbuffer_t* packetbuffer;
@@ -77,6 +85,10 @@ typedef struct
 #define XPT_OPC_C_SUBMIT_SHARE	4
 #define XPT_OPC_S_SHARE_ACK		5
 
+#define XPT_OPC_C_PING			8
+#define XPT_OPC_S_PING			8
+
+
 // list of error codes
 
 #define XPT_ERROR_NONE				(0)
@@ -109,7 +121,6 @@ uint8 xptPacketbuffer_readU8(xptPacketbuffer_t* pb, bool* error);
 void xptPacketbuffer_readData(xptPacketbuffer_t* pb, uint8* data, uint32 length, bool* error);
 
 void xptPacketbuffer_beginWritePacket(xptPacketbuffer_t* pb, uint8 opcode);
-void xptPacketbuffer_writeU64(xptPacketbuffer_t* pb, bool* error, uint64 v);
 void xptPacketbuffer_writeU32(xptPacketbuffer_t* pb, bool* error, uint32 v);
 void xptPacketbuffer_writeU16(xptPacketbuffer_t* pb, bool* error, uint16 v);
 void xptPacketbuffer_writeU8(xptPacketbuffer_t* pb, bool* error, uint8 v);

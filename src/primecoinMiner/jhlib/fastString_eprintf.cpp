@@ -1,4 +1,7 @@
 #include"./JHLib.h"
+#include <cstdarg>
+#include <iostream>
+
 // #include"fastString.h"
 
 static char esprintf_HEX_LOWER[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
@@ -52,7 +55,7 @@ int esprintf_xutf8(char *out, char *s, int padRight, int padZero, int width)
 
 int esprintf_d(char *out, int value, int padRight, int padZero, int width)
 {
-	int c = 0;
+	//int c = 0; unused
 	char DezimalStr[32];
 	int dl = 0; //DezimalLength
 	int negative = 0;
@@ -126,7 +129,7 @@ int esprintf_hf(char *out, float valueF, int padRight, int padZero, int width)
 {
 	char* outInitial = out;
 	sint32 value = (sint32)floor(valueF);
-	int c = 0;
+//	int c = 0;   unused?
 	char DezimalStr[32];
 	int dl = 0; //DezimalLength
 	int negative = 0;
@@ -198,14 +201,14 @@ int esprintf_hf(char *out, float valueF, int padRight, int padZero, int width)
 	*out = '.';
 	out++;		
 
-	int dl2 = dl;
+	//int dl2 = dl; unused
 
 	value = (sint32)((valueF - floor(valueF))*100000.0f);
-	c = 0;
+	//c = 0; unused
 	dl = 0; //DezimalLength
 	padZero = 1;
 	width = 6;
-	padRight = 0;
+	//padRight = 0; unused
 	negative = 0;
 	if( value < 0 )
 	{
@@ -281,14 +284,25 @@ int esprintf_hf(char *out, float valueF, int padRight, int padZero, int width)
 int esprintf_c(char *out, char value, int padRight, int padZero, int width)
 {
 	// todo: support for padRight etc.
-	int c = 0;
+	//int c = 0; unused
 	out[0] = value;
+	return 1;
+}
+
+
+int esprintf_B(char *out, bool value, int padRight, int padZero, int width) //Boolean
+{
+	if(value){
+		*out = '1';
+	}else{
+		*out = '0';
+	}
 	return 1;
 }
 
 int esprintf_b(char *out, signed long long value, int padRight, int padZero, int width) //"Big" - signed long long
 {
-	int c = 0;
+	//int c = 0; unused
 	char DezimalStr[32];
 	int dl = 0; //DezimalLength
 	int negative = 0;
@@ -316,7 +330,7 @@ int esprintf_b(char *out, signed long long value, int padRight, int padZero, int
 	{
 		int r = 0;
 		int totalDigits = negative + dl;
-		totalDigits = min(totalDigits, width);
+		totalDigits = std::min(totalDigits, width);
 		if( dl >= totalDigits )
 			negative = 0;
 		int NumberDigits = totalDigits - negative;
@@ -360,7 +374,7 @@ int esprintf_b(char *out, signed long long value, int padRight, int padZero, int
 
 int esprintf_u(char *out, unsigned int value, int padRight, int padZero, int width)
 {
-	int c = 0;
+	//int c = 0; unused
 	char DezimalStr[32];
 	int dl = 0; //DezimalLength
 	if( value == 0 )
@@ -382,7 +396,7 @@ int esprintf_u(char *out, unsigned int value, int padRight, int padZero, int wid
 	{
 		int r = 0;
 		int totalDigits = dl;
-		totalDigits = min(totalDigits, width);
+		totalDigits = std::min(totalDigits, width);
 		int NumberDigits = totalDigits;
 		int PadDigits = width - totalDigits;
 		char PadDigit = ' ';
@@ -413,7 +427,7 @@ int esprintf_u(char *out, unsigned int value, int padRight, int padZero, int wid
 
 int esprintf_X(char *out, unsigned int value, int padRight, int padZero, int width, int UpperCase)
 {
-	int c = 0;
+	//int c = 0; unused
 	char DezimalStr[32];
 	int dl = 0; //HexLength
 	while(value)
@@ -430,7 +444,7 @@ int esprintf_X(char *out, unsigned int value, int padRight, int padZero, int wid
 	{
 		int r = 0;
 		int totalDigits = dl;
-		totalDigits = min(totalDigits, width);
+		totalDigits = std::min(totalDigits, width);
 		int NumberDigits = totalDigits;
 		int PadDigits = width - totalDigits;
 		char PadDigit = ' ';
@@ -464,12 +478,38 @@ int esprintf_X(char *out, unsigned int value, int padRight, int padZero, int wid
  */
 #ifdef _WIN64
 void __cdecl _esprintf(char *out, char *format, uint64 *param, unsigned int *lengthOut)
-#else
+#elif defined (_WIN32)
 void __cdecl _esprintf(char *out, char *format, unsigned int *param, unsigned int *lengthOut)
+#else // gcc
+void __attribute__((cdecl)) _esprintf(char *out, char *format, unsigned int *lengthOut) 
 #endif
 {
-	if( lengthOut )
+		if( lengthOut )
 		*lengthOut = 0;
+
+}
+
+void esprintf(char *out, char *format, ...)
+{
+	// use some dirty trick to access varying arguments
+	//unsigned int *param = (unsigned int*)_ADDRESSOF(format);
+	//param++; // skip first parameter
+	//_esprintf(out, format, param, NULL);
+#ifdef _WIN64
+		uint64 *param = (uint64*)_ADDRESSOF(format);
+		param++; // skip first parameter
+		unsigned int formattedLength = 0;
+		_esprintf(out, format, param, &formattedLength);
+#elif defined(_WIN32)
+	unsigned int *param = (unsigned int*)_ADDRESSOF(format);
+		param++; // skip first parameter
+		unsigned int formattedLength = 0;
+		_esprintf(out, format, param, &formattedLength);
+#endif
+	va_list arguments;
+	va_start ( arguments, format );           // Initializing arguments to store all values after format
+
+	unsigned int *lengthOut = 0;
 	//Do parsing
 	char *p = format;
 	char *o = out;
@@ -542,7 +582,7 @@ void __cdecl _esprintf(char *out, char *format, unsigned int *param, unsigned in
 					p++;
 				}
 				//Now check case
-#ifdef _WIN64
+#if defined (_WIN64)
 				if( *p == 'd' ) //signed integer
 				{
 					o += esprintf_d(o, *(sint64*)param, PadRight, PadZero, Width); param++;
@@ -587,7 +627,7 @@ void __cdecl _esprintf(char *out, char *format, unsigned int *param, unsigned in
 					p += 1;
 				}
 				p++;
-#else
+#elif defined (_WIN32)
 				if( *p == 'd' ) //signed integer
 				{
 					o += esprintf_d(o, *(signed int*)param, PadRight, PadZero, Width); param++;
@@ -632,6 +672,57 @@ void __cdecl _esprintf(char *out, char *format, unsigned int *param, unsigned in
 					p += 1;
 				}
 				p++;
+#else
+				
+				if( *p == 'd' ) //signed integer
+				{
+					o += esprintf_d(o, va_arg(arguments,sint64), PadRight, PadZero, Width);
+				}
+				else if( p[0] == 'u' && p[1] == 't' && p[2] == 'f' && p[3] == '8' ) //utf8 string
+				{
+					
+					o += esprintf_utf8(o, va_arg(arguments,char*), PadRight, PadZero, Width);
+					p += 3;
+				}
+				else if( p[0] == 'x' && p[1] == 'u' && p[2] == 't' && p[3] == 'f' && p[4] == '8' ) //hex-encoded utf8 string
+				{
+					o += esprintf_xutf8(o, va_arg(arguments,char*), PadRight, PadZero, Width);
+					p += 4;
+				}
+				else if( *p == 'u' ) //signed integer
+				{
+					o += esprintf_u(o, va_arg(arguments,unsigned int), PadRight, PadZero, Width);
+				}
+				else if( *p == 'c' ) //signed ascii char
+				{
+					o += esprintf_c(o, va_arg(arguments,char), PadRight, PadZero, Width);
+				}
+				else if( *p == 'b' ) //signed long integer
+				{
+					o += esprintf_b(o, va_arg(arguments,signed long long), PadRight, PadZero, Width);
+				}
+				else if( *p == 'B' ) //boolean
+				{
+					o += esprintf_B(o, va_arg(arguments,bool), PadRight, PadZero, Width);
+				}
+				else if( *p == 's' ) //string
+				{
+					o += esprintf_s(o, va_arg(arguments,char*), PadRight, PadZero, Width);
+				}
+				else if( *p == 'X' ) //unsigned integer as hex
+				{
+					o += esprintf_X(o, va_arg(arguments,unsigned int), PadRight, PadZero, Width, 1);
+				}
+				else if( *p == 'x' ) //unsigned integer as hex
+				{
+					o += esprintf_X(o, va_arg(arguments,unsigned int), PadRight, PadZero, Width, 0);
+				}
+				else if( p[0] == 'h' && p[1] == 'f' ) // helper float
+				{
+					o += esprintf_hf(o, va_arg(arguments,float), PadRight, PadZero, Width);
+					p += 1;
+				}
+				p++;
 #endif
 			}
 
@@ -646,24 +737,4 @@ void __cdecl _esprintf(char *out, char *format, unsigned int *param, unsigned in
 	*o = '\0';
 	if( lengthOut )
 		*lengthOut = (unsigned int)(o-out);
-}
-
-void esprintf(char *out, char *format, ...)
-{
-	// use some dirty trick to access varying arguments
-	//unsigned int *param = (unsigned int*)_ADDRESSOF(format);
-	//param++; // skip first parameter
-	//_esprintf(out, format, param, NULL);
-	#ifdef _WIN64
-		uint64 *param = (uint64*)_ADDRESSOF(format);
-		param++; // skip first parameter
-		unsigned int formattedLength = 0;
-		_esprintf(out, format, param, &formattedLength);
-	#else
-		unsigned int *param = (unsigned int*)_ADDRESSOF(format);
-		param++; // skip first parameter
-		unsigned int formattedLength = 0;
-		_esprintf(out, format, param, &formattedLength);
-	#endif
-
 }

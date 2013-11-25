@@ -8,7 +8,7 @@ typedef struct
 	uint32 nBits;
 	// primecoin specific
 	uint32 sieveSize;
-	uint64 sieveCandidate; // index of sieveCandidate for this share
+	uint32 sieveCandidate; // index of sieveCandidate for this share
 	uint8 fixedMultiplierSize;
 	uint8 fixedMultiplier[201];
 	uint8 chainMultiplierSize;
@@ -17,7 +17,11 @@ typedef struct
 
 typedef struct  
 {
+#ifdef _WIN32
 	SOCKET clientSocket;
+#else
+    int clientSocket;
+#endif
 	xptPacketbuffer_t* sendBuffer; // buffer for sending data
 	xptPacketbuffer_t* recvBuffer; // buffer for receiving data
 	// worker info
@@ -32,13 +36,19 @@ typedef struct
 	// disconnect info
 	bool disconnected;
 	char* disconnectReason;
+	// periodic ping/heartbeat info
+	uint64 lastClient2ServerInteractionTimestamp;
 	// work data
 	uint32 workDataCounter; // timestamp of when received the last block of work data
 	bool workDataValid;
 	xptBlockWorkInfo_t blockWorkInfo;
 	xptWorkData_t workData[128]; // size equal to max payload num
 	// shares to submit
+#ifdef _WIN32
 	CRITICAL_SECTION cs_shareSubmit;
+#else
+  pthread_mutex_t cs_shareSubmit;
+#endif
 	simpleList_t* list_shareSubmitQueue;
 }xptClient_t;
 
@@ -58,5 +68,6 @@ void xptClient_sendWorkerLogin(xptClient_t* xptClient);
 bool xptClient_processPacket_authResponse(xptClient_t* xptClient);
 bool xptClient_processPacket_blockData1(xptClient_t* xptClient);
 bool xptClient_processPacket_shareAck(xptClient_t* xptClient);
+bool xptClient_processPacket_client2ServerPing(xptClient_t* xptClient);
 
 extern char* minerVersionString;

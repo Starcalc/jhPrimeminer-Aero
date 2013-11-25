@@ -57,11 +57,35 @@ int fStrLen(char *src);
 // other
 #ifdef _WIN64
 void __cdecl _esprintf(char *out, char *format, uint64 *param, unsigned int *lengthOut);
+#elif _WIN32
+void __cdecl _esprintf(char *out, char *format, unsigned int *lengthOut);
 #else
-void __cdecl _esprintf(char *out, char *format, unsigned int *param, unsigned int *lengthOut);
+void  _esprintf(char *out, char *format, unsigned int *lengthOut);
 #endif
 //void _esprintf(char *out, char *format, unsigned int *param, unsigned int *lengthOut); // used only internally
 void esprintf(char *out, char *format, ...);
+
+
+int esprintf_X(char *out, unsigned int value, int padRight, int padZero, int width, int UpperCase);
+int esprintf_u(char *out, unsigned int value, int padRight, int padZero, int width);
+int esprintf_b(char *out, signed long long value, int padRight, int padZero, int width); //"Big" - signed long long
+int esprintf_B(char *out, bool value, int padRight, int padZero, int width); //Boolean
+int esprintf_c(char *out, char value, int padRight, int padZero, int width);
+int esprintf_hf(char *out, float valueF, int padRight, int padZero, int width);
+int esprintf_d(char *out, int value, int padRight, int padZero, int width);
+int esprintf_xutf8(char *out, char *s, int padRight, int padZero, int width);
+int esprintf_utf8(char *out, char *s, int padRight, int padZero, int width);
+int esprintf_s(char *out, char *s, int padRight, int padZero, int width);
+
+
+
+
+
+
+
+
+
+
 
 // tokenizer
 char** fStrTokenize(char* src, char* tokens);
@@ -113,5 +137,6 @@ fStr_t* fStr_alloc(fStr_buffer128b_t* fStrBuffer, uint32 format=FSTR_FORMAT_UTF8
 fStr_t* fStr_alloc(fStr_buffer256b_t* fStrBuffer, uint32 format=FSTR_FORMAT_UTF8);
 fStr_t* fStr_alloc(fStr_buffer1kb_t* fStrBuffer, uint32 format=FSTR_FORMAT_UTF8);
 fStr_t* fStr_alloc(fStr_buffer4kb_t* fStrBuffer, uint32 format=FSTR_FORMAT_UTF8);
+
 
 

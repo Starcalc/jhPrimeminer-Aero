@@ -513,7 +513,7 @@ float vector_distanceRayToPoint(vector3D_t* origin, vector3D_t* direction, vecto
 	c.z = point->z - origin->z;
 	//vector3D_t v = (b - a).Normalize();	// Unit Vector from a to b
 	//float d = (b - a).Length();	// Length of the line segment
-	float t = vector_dot(direction, &c);//v.DotProduct©;	// Intersection point Distance from a
+	float t = vector_dot(direction, &c);//v.DotProductï¿½;	// Intersection point Distance from a
 
 	vector3D_t v;
 	v.x = origin->x + t * direction->x;
@@ -571,16 +571,16 @@ bool intersection_rayBox(vector3D_t* orig, vector3D_t* dir, vector3D_t* box_max,
 	tmax.z = (box_max->z - orig->z)/dir->z;
 
 	vector3D_t real_min;
-	real_min.x = min(tmin.x, tmax.x);
-	real_min.y = min(tmin.y, tmax.y);
-	real_min.z = min(tmin.z, tmax.z);
+	real_min.x = std::min(tmin.x, tmax.x);
+	real_min.y = std::min(tmin.y, tmax.y);
+	real_min.z = std::min(tmin.z, tmax.z);
 	vector3D_t real_max;
-	real_max.x = max(tmin.x, tmax.x);
-	real_max.y = max(tmin.y, tmax.y);
-	real_max.z = max(tmin.z, tmax.z);
+	real_max.x = std::max(tmin.x, tmax.x);
+	real_max.y = std::max(tmin.y, tmax.y);
+	real_max.z = std::max(tmin.z, tmax.z);
 
-	float minmax = min( min(real_max.x, real_max.y), real_max.z);
-	float maxmin = max( max(real_min.x, real_min.y), real_min.z);
+	float minmax = std::min( std::min(real_max.x, real_max.y), real_max.z);
+	float maxmin = std::max( std::max(real_min.x, real_min.y), real_min.z);
 
 	*distance = maxmin;
 	return (minmax >= maxmin);
@@ -602,16 +602,16 @@ bool intersection_rayBox(vector3D_t* orig, vector3D_t* dir, vector3D_t* box_max,
 	tmax.z = (box_max->z - orig->z)/dir->z;
 
 	vector3D_t real_min;
-	real_min.x = min(tmin.x, tmax.x);
-	real_min.y = min(tmin.y, tmax.y);
-	real_min.z = min(tmin.z, tmax.z);
+	real_min.x = std::min(tmin.x, tmax.x);
+	real_min.y = std::min(tmin.y, tmax.y);
+	real_min.z = std::min(tmin.z, tmax.z);
 	vector3D_t real_max;
-	real_max.x = max(tmin.x, tmax.x);
-	real_max.y = max(tmin.y, tmax.y);
-	real_max.z = max(tmin.z, tmax.z);
+	real_max.x = std::max(tmin.x, tmax.x);
+	real_max.y = std::max(tmin.y, tmax.y);
+	real_max.z = std::max(tmin.z, tmax.z);
 
-	float minmax = min( min(real_max.x, real_max.y), real_max.z);
-	float maxmin = max( max(real_min.x, real_min.y), real_min.z);
+	float minmax = std::min( std::min(real_max.x, real_max.y), real_max.z);
+	float maxmin = std::max( std::max(real_min.x, real_min.y), real_min.z);
 
 	*distance = maxmin;
 
@@ -692,3 +692,4 @@ uint32 getLeastBitIndex(uint32 mask)
 		cIndex -= 1;
 	return cIndex;
 }
+

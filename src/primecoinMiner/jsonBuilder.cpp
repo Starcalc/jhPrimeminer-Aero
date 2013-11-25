@@ -17,5 +17,9 @@ void jsonBuilder_buildObjectString(fStr_t* fStr_output, jsonObject_t* jsonObject
 		return;
 	}
 	
-	__debugbreak();
+#ifdef _WIN32
+		__debugbreak();
+#else
+	    raise(SIGTRAP);
+#endif 
 }

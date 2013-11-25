@@ -14,9 +14,9 @@ tgaImage_t* tga_load(char *filePath)
 	//1 = indiziert (Farbpalette) unkomprimiert
 	//2 = RGB (24 Bit) unkomprimiert
 	//3 = monochrom unkomprimiert
-	//9 = indiziert (Farbpalette) lauflängenkodiert
-	//10 = RGB (24 Bit) lauflängenkodiert
-	//11 = monochrom lauflängenkodiert
+	//9 = indiziert (Farbpalette) lauflï¿½ngenkodiert
+	//10 = RGB (24 Bit) lauflï¿½ngenkodiert
+	//11 = monochrom lauflï¿½ngenkodiert
 	uint16 hdr_paletteStart = stream_readU16(in);
 	uint16 hdr_paletteEnd = stream_readU16(in);
 	uint16 hdr_paletteColorDepth = stream_readU8(in);
@@ -24,7 +24,7 @@ tgaImage_t* tga_load(char *filePath)
 	sint16 hdr_centerY = stream_readS16(in);
 	uint16 hdr_width = stream_readU16(in);
 	uint16 hdr_height = stream_readU16(in);
-	uint8 hdr_colorDepth = stream_readU8(in); //gültige Werte sind 1, 8, 15, 16, 24 und 32
+	uint8 hdr_colorDepth = stream_readU8(in); //gï¿½ltige Werte sind 1, 8, 15, 16, 24 und 32
 	uint8 hdr_pixelAttributes = stream_readU8(in);
 	//Bit 4: horizontale Lage des Nullpunkts (0 = links, 1 = rechts)
 	//Bit 5: vertikale Lage des Nullpunkts (0 = unten, 1 = oben)
@@ -59,10 +59,18 @@ tgaImage_t* tga_load(char *filePath)
 			}
 		}
 		else
-			__debugbreak();
+#ifdef _WIN32
+		__debugbreak();
+#else
+	    raise(SIGTRAP);
+#endif 
 	}
 	else
+#ifdef _WIN32
 		__debugbreak();
+#else
+	    raise(SIGTRAP);
+#endif 
 	// developer data
 	// not necessary for us, ignore
 	stream_destroy(in); // close stream and file
