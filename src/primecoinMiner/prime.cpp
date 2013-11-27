@@ -14,7 +14,7 @@
 //std::vector<unsigned int> vPrimes;
 //uint32* vPrimes;
 uint32* vPrimesTwoInverse;
-uint32 vPrimesSize = 0;
+//uint32 vPrimesSize = 0;
 
 #ifdef _WIN32
 __declspec( thread ) BN_CTX* pctx = NULL;
@@ -870,8 +870,8 @@ bool MineProbablePrimeChain(CSieveOfEratosthenes*& psieve, primecoinBlock_t* blo
    // help block rate.
    // Discussions with jh00 revealed this is non-linear, and graphs show that 0.1 diff is enough
    // to warrant a switch
-   if (GetChainDifficulty(block->nBits) >= ((lSieveTarget + 1) - 0.1f))
-      lSieveTarget++;
+//   if (GetChainDifficulty(block->nBits) >= ((lSieveTarget + 1) - 0.1f))
+//      lSieveTarget++;
 
    if (nOverrideBTTargetValue > 0)
       lSieveBTTarget = nOverrideBTTargetValue;

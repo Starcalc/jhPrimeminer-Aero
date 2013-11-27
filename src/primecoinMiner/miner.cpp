@@ -99,8 +99,9 @@ bool BitcoinMiner(primecoinBlock_t* primecoinBlock, CSieveOfEratosthenes*& psiev
 		}
 		// Primecoin: primorial fixed multiplier
 		mpz_class mpzPrimorial;
-		unsigned int nRoundTests = 0;
-		unsigned int nRoundPrimesHit = 0;
+
+//		unsigned int nRoundTests = 0;
+//		unsigned int nRoundPrimesHit = 0;
 //		uint64 nPrimeTimerStart = getTimeMilliseconds();   unused?
 		
 		//if( loopCount > 0 )
@@ -148,8 +149,8 @@ bool BitcoinMiner(primecoinBlock_t* primecoinBlock, CSieveOfEratosthenes*& psiev
 		//	//break;
 		//}
 		//psieve = NULL;
-		nRoundTests += nTests;
-		nRoundPrimesHit += nPrimesHit;
+//		nRoundTests += nTests;
+//		nRoundPrimesHit += nPrimesHit;
 		nPrimorialMultiplier = primeStats.nPrimorialMultiplier;
 		// added this
 		//if (fNewBlock)

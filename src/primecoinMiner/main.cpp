@@ -22,7 +22,7 @@ primeStats_t primeStats = {0};
 volatile int total_shares = 0;
 volatile int valid_shares = 0;
 unsigned int nMaxSieveSize;
-//unsigned int vPrimesSize;
+unsigned int vPrimesSize;
 float vPrimesMult = 184.5;
 float vPrimesAvg = 8;
 float vPrimesAdj = 1;
@@ -296,6 +296,7 @@ int queryLocalPrimecoindBlockCount(bool useLocal)
       return (int) jsonObject_getNumberValueAsS32(jsonResult);
       jsonObject_freeObject(jsonReturnValue);
 }
+   return 0;
 }
 
 static double DIFFEXACTONE = 26959946667150639794667015087019630673637144422540572481103610249215.0;
@@ -1126,7 +1127,7 @@ int jhMiner_main_xptMode()
  CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)watchdog_thread, (LPVOID)&threadMap, 0, 0);
 
 #else
-	uint32_t totalThreads = commandlineInput.numThreads + 2;
+	uint32_t totalThreads = commandlineInput.numThreads;
 
   pthread_t threads[totalThreads];
   // start the Auto Tuning thread
@@ -1344,7 +1345,7 @@ int main(int argc, char **argv)
 	//CRYPTO_set_mem_ex_functions(mallocEx, reallocEx, freeEx);
 
    printf("\n");
-   printf(" ============================================================================ ");
+   printf(" ============================================================================\n");
    printf("|  jhPrimeMiner - mod by AeroCloud -v35beta                     |\n");
    printf("|     optimised from hg5fm (mumus) v7.1 build + HP10 updates    |\n");
    printf("|  author: JH (http://ypool.net)                                |\n");
