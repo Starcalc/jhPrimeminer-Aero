@@ -56,7 +56,6 @@ typedef uint32_t DWORD;
 #include <iomanip>
 #include"sha256.h"
 #include"ripemd160.h"
-//#include"bignum_custom.h"
 static const int PROTOCOL_VERSION = 70001;
 
 #include<openssl/bn.h>
@@ -79,7 +78,6 @@ int BN2_uadd(BIGNUM *r, const BIGNUM *a, const BIGNUM *b);
 // original primecoin BN stuff
 #include"uint256.h"
 #include"bignum2.h"
-//#include"bignum_custom.h"
 
 #include"prime.h"
 #include"jsonrpc.h"
@@ -88,39 +86,10 @@ int BN2_uadd(BIGNUM *r, const BIGNUM *a, const BIGNUM *b);
 #include"xptServer.h"
 #include"xptClient.h"
 
-static const uint64_t COIN = 100000000;
-static const uint64_t CENT = 1000000;
-
-
-#define	bswap_16(value)  \
- 	((((value) & 0xff) << 8) | ((value) >> 8))
-
-#define	bswap_32(value)	\
- 	(((uint32_t)bswap_16((uint16_t)((value) & 0xffff)) << 16) | \
- 	(uint32_t)bswap_16((uint16_t)((value) >> 16)))
-
-
-static inline uint32_t swab32(uint32_t v)
-{
-	return bswap_32(v);
-}
-
-static inline void swap32yes(void*out, const void*in, size_t sz) {
-	size_t swapcounter = 0;
-	for (swapcounter = 0; swapcounter < sz; ++swapcounter)
-		(((uint32_t*)out)[swapcounter]) = swab32(((uint32_t*)in)[swapcounter]);
-}
-
 #define BEGIN(a)            ((char*)&(a))
 #define END(a)              ((char*)&((&(a))[1]))
-#define swap32tobe(out, in, sz)  swap32yes(out, in, sz)
 
-
-static inline float GetChainDifficulty(unsigned int nChainLength)
-{
-	return (float)nChainLength / 16777216.0;
-}
-
+static inline double GetChainDifficulty(unsigned int nChainLength) { return (double)nChainLength / 16777216.0; }
 
 template<typename T>
 std::string HexStr(const T itbegin, const T itend, bool fSpaces=false)
@@ -148,7 +117,7 @@ typedef struct
 	/* +0x08 */ uint32 blockHeight;
 	/* +0x0C */ uint32 padding1;
 	/* +0x10 */ uint32 padding2;
-	/* +0x14 */ uint32 client_shareBits; // difficulty score of found share (the client is allowed to modify this value, but not the others)
+	/* +0x14 */ uint32 client_shareBits;
 	/* +0x18 */ uint32 serverStuff1;
 	/* +0x1C */ uint32 serverStuff2;
 }serverData_t;
@@ -161,6 +130,7 @@ typedef struct
 	volatile float fBlockShareValue;
 	volatile float fTotalSubmittedShareValue;
 	volatile uint32_t chainCounter[4][13];
+	volatile uint32_t chainCounter2[112][13];
 	volatile uint32_t chainTotals[4];
 	volatile uint32_t nWaveTime;
 	volatile unsigned int nWaveRound;
@@ -171,7 +141,12 @@ typedef struct
 	volatile float nPrevChainHit;
 	volatile unsigned int nPrimorialMultiplier;
 	
+	std::vector<unsigned int> nPrimorials;
+	volatile unsigned int nPrimorialsSize;
+
    volatile float nSieveRounds;
+	volatile float nSPS;
+	volatile int pMult;
    volatile float nCandidateCount;
 
 #ifdef _WIN32
@@ -192,6 +167,8 @@ typedef struct
 	bool shareFound;
 	bool shareRejected;
 	volatile unsigned int nL1CacheElements;
+	volatile bool tSplit;
+	volatile bool adminFunc;
 
 }primeStats_t;
 
@@ -215,6 +192,24 @@ typedef struct
 	bool xptMode;
 }primecoinBlock_t;
 
+typedef struct {
+   bool dataIsValid;
+   uint8 data[128];
+   uint32 dataHash; // used to detect work data changes
+   uint8 serverData[32]; // contains data from the server 
+} workDataEntry_t;
+
+typedef struct {
+#ifdef _WIN32
+	CRITICAL_SECTION cs;
+#else
+  pthread_mutex_t cs;
+#endif
+  uint8 protocolMode;
+   workDataEntry_t workEntry[128]; // work data for each thread (up to 128)
+   xptClient_t* xptClient;
+} workData_t;
+
 extern jsonRequestTarget_t jsonRequestTarget; // rpc login data
 
 // prototypes from main.cpp
@@ -222,14 +217,13 @@ bool error(const char *format, ...);
 bool jhMiner_pushShare_primecoin(uint8 data[256], primecoinBlock_t* primecoinBlock);
 void primecoinBlock_generateHeaderHash(primecoinBlock_t* primecoinBlock, uint8 hashOutput[32]);
 uint32 _swapEndianessU32(uint32 v);
-uint32 jhMiner_getCurrentWorkBlockHeight(sint32 threadIndex);
+uint32 jhMiner_getCurrentWorkBlockHeight(unsigned int threadIndex);
 
-bool BitcoinMiner(primecoinBlock_t* primecoinBlock, CSieveOfEratosthenes*& psieve, sint32 threadIndex);
+bool BitcoinMiner(primecoinBlock_t* primecoinBlock, CSieveOfEratosthenes*& psieve, unsigned int threadIndex, unsigned int nonceStep);
 
 // direct access to share counters
-extern volatile int total_shares;
-extern volatile int valid_shares;
-extern std::set<mpz_class> multiplierSet;
+extern volatile unsigned int total_shares;
+extern volatile unsigned int valid_shares;
 extern bool appQuitSignal;
 
 #ifdef _WIN32

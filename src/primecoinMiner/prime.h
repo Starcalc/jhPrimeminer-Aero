@@ -24,17 +24,13 @@ typedef unsigned long sieve_word_t;
 #endif
 
 extern std::vector<unsigned int> vPrimes;
-static const unsigned int nMaxSieveExtensions = 20;
-static const unsigned int nMinSieveExtensions = 0;
-static const unsigned int nDefaultSieveExtensions = 10;
-static const unsigned int nDefaultSieveExtensionsTestnet = 4;
 extern unsigned int nSieveExtensions;
 
 extern unsigned int nMaxSieveSize;
 extern unsigned int vPrimesSize;
-extern unsigned int nMaxPrimes;
 extern bool nPrintDebugMessages;
-extern unsigned long nOverrideTargetValue;
+extern bool nPrintSPSMessages;
+extern unsigned int nOverrideTargetValue;
 extern unsigned int nOverrideBTTargetValue;
 static const uint256 hashBlockHeaderLimit = (uint256(1) << 255);
 static const CBigNum bnOne = 1;
@@ -48,35 +44,22 @@ static const mpz_class mpzConst8 = 8;
 static const mpz_class mpzPrimeMax = (mpzOne << 2000) - 1;
 static const mpz_class mpzPrimeMin = (mpzOne << 255);
 
+extern volatile unsigned int threadSNum;
 
 extern unsigned int nTargetInitialLength;
 extern unsigned int nTargetMinLength;
 extern DWORD * threadHearthBeat;
 
-// Generate small prime table
 void GeneratePrimeTable(unsigned int nSieveSize);
-// Get next prime number of p
-//bool PrimeTableGetNextPrime(unsigned int* p);
 bool PrimeTableGetNextPrime(unsigned int& p);
-// Get previous prime number of p
 bool PrimeTableGetPreviousPrime(unsigned int& p);
-
+bool IsXptClientConnected();
 // Compute primorial number p#
 void BNPrimorial(unsigned int p, CBigNum& bnPrimorial);
 void Primorial(unsigned int p, mpz_class& mpzPrimorial);
 unsigned int PrimorialFast(unsigned int p);
-// Compute the first primorial number greater than or equal to bn
-//void PrimorialAt(CBigNum& bn, CBigNum& bnPrimorial);
 void PrimorialAt(mpz_class& bn, mpz_class& mpzPrimorial);
 
-// Test probable prime chain for: bnPrimeChainOrigin
-// fFermatTest
-//   true - Use only Fermat tests
-//   false - Use Fermat-Euler-Lagrange-Lifchitz tests
-// Return value:
-//   true - Probable prime chain found (one of nChainLength meeting target)
-//   false - prime chain too short (none of nChainLength meeting target)
-//bool ProbablePrimeChainTest(const CBigNum& bnPrimeChainOrigin, unsigned int nBits, bool fFermatTest, unsigned int& nChainLengthCunningham1, unsigned int& nChainLengthCunningham2, unsigned int& nChainLengthBiTwin);
 bool ProbablePrimeChainTest(const mpz_class& bnPrimeChainOrigin, unsigned int nBits, bool fFermatTest, unsigned int& nChainLengthCunningham1, unsigned int& nChainLengthCunningham2, unsigned int& nChainLengthBiTwin, bool fullTest =false);
 bool ProbablePrimeChainTestOrig(const mpz_class& bnPrimeChainOrigin, unsigned int nBits, bool fFermatTest, unsigned int& nChainLengthCunningham1, unsigned int& nChainLengthCunningham2, unsigned int& nChainLengthBiTwin, bool fullTest =false);
 
@@ -97,30 +80,16 @@ uint64 TargetGetFractionalDifficulty(unsigned int nBits);
 bool TargetSetFractionalDifficulty(uint64 nFractionalDifficulty, unsigned int& nBits);
 std::string TargetToString(unsigned int nBits);
 unsigned int TargetFromInt(unsigned int nLength);
-bool TargetGetMint(unsigned int nBits, uint64& nMint);
-bool TargetGetNext(unsigned int nBits, uint64_t nInterval, uint64_t nTargetSpacing, uint64 nActualSpacing, unsigned int& nBitsNext);
 
-// Mine probable prime chain of form: n = h * p# +/- 1
-//bool MineProbablePrimeChain(CBlock& block, CBigNum& bnFixedMultiplier, bool& fNewBlock, unsigned int& nTriedMultiplier, unsigned int& nProbableChainLength, unsigned int& nTests, unsigned int& nPrimesHit);
-
-// Check prime proof-of-work
-enum // prime chain type
-{
+enum {
 	PRIME_CHAIN_CUNNINGHAM1 = 1u,
 	PRIME_CHAIN_CUNNINGHAM2 = 2u,
 	PRIME_CHAIN_BI_TWIN     = 3u
 };
-// bool CheckPrimeProofOfWork(uint256 hashBlockHeader, unsigned int nBits, const CBigNum& bnPrimeChainMultiplier, unsigned int& nChainType, unsigned int& nChainLength);
-
 // prime target difficulty value for visualization
 double GetPrimeDifficulty(unsigned int nBits);
-// Estimate work transition target to longer prime chain
-unsigned int EstimateWorkTransition(unsigned int nPrevWorkTransition, unsigned int nBits, unsigned int nChainLength);
-// prime chain type and length value
-std::string GetPrimeChainName(unsigned int nChainType, unsigned int nChainLength);
 
-
-	// Sieve of Eratosthenes for proof-of-work mining
+// Sieve of Eratosthenes for proof-of-work mining
 //
 // Includes the sieve extension feature from jhPrimeminer by jh000
 //
@@ -137,11 +106,11 @@ std::string GetPrimeChainName(unsigned int nChainType, unsigned int nChainLength
 // The larger numbers in the extensions have a slightly smaller probability of
 // being primes and take slightly longer to test but they can be calculated very
 // efficiently because the layers overlap.
-class CSieveOfEratosthenes
-{
+
+
+class CSieveOfEratosthenes {
    static const int nMinPrimeSeq = 4; // this is Prime number 11, the first prime with unknown factor status.
     unsigned int nSieveSize; // size of the sieve
-   unsigned int nMaxPrimes; //weave up to max primes
     unsigned int nSieveExtensions; // extend the sieve a given number of times
 	unsigned int nAllocatedSieveSize;
     mpz_class mpzHash; // hash of the block header
@@ -162,8 +131,8 @@ class CSieveOfEratosthenes
    sieve_word_t *vfExtendedCompositeBiTwin;
    sieve_word_t *vfExtendedCompositeCunningham1;
    sieve_word_t *vfExtendedCompositeCunningham2;
-   static const unsigned int nWordBits = 8 * sizeof(sieve_word_t);	
 
+   static const unsigned int nWordBits = 64;
     unsigned int nCandidatesWords;
     unsigned int nCandidatesBytes;
 
@@ -172,33 +141,27 @@ class CSieveOfEratosthenes
    unsigned int *vCunningham1Multipliers;
    unsigned int *vCunningham2Multipliers;
 
-    unsigned int nPrimeSeq; // prime sequence number currently being processed
-    unsigned int nCandidateCount; // cached total count of candidates
-    unsigned int nCandidateMultiplier; // current candidate for power test
-   unsigned int nCandidateIndex; // internal candidate index
-   bool fCandidateIsExtended; // is the current candidate in the extended part
-   unsigned int nCandidateActiveExtension; // which extension is active
+   unsigned int nPrimeSeq;
+   unsigned int nCandidateCount;
+   uint64 nCandidateMultiplier;
+   uint64 nCandidateIndex;
+   bool fCandidateIsExtended;
+   unsigned int nCandidateActiveExtension;
     
-   unsigned int nChainLength; // target chain length
-   unsigned int nBTChainLength; // target chain length
-   unsigned int nSieveLayers; // sieve layers
-   unsigned int nPrimes; // number of times to weave the sieve
+   unsigned int nChainLength;
+   unsigned int nBTChainLength;
+   unsigned int nSieveLayers;
+   unsigned int nPrimes;
    unsigned int nTotalPrimes;
     
-    //CBlockIndex* pindexPrev;
-    
-   __inline unsigned int GetWordNum(unsigned int nBitNum) {
-        return nBitNum / nWordBits;
-    }
-       
-   __inline sieve_word_t  GetBitMask(unsigned int nBitNum) {
-      return (sieve_word_t)1UL << (nBitNum % nWordBits);
-    }
+   __inline uint64 GetWordNum(uint64 nBitNum) { return nBitNum / nWordBits; }
+   __inline sieve_word_t GetBitMask(uint64 nBitNum) { return (sieve_word_t)1UL << (nBitNum % nWordBits); }
 
    void ProcessMultiplier(sieve_word_t *vfComposites, const unsigned int nMinMultiplier, const unsigned int nMaxMultiplier, const std::vector<unsigned int>& vPrimes, unsigned int *vMultipliers, unsigned int nLayerSeq);
+   void ProcessMultiplier2(sieve_word_t *vfComposites, const unsigned int nMinMultiplier, const unsigned int nMaxMultiplier, const std::vector<unsigned int>& vPrimes, unsigned int *vMultipliers, unsigned int nLayerSeq);
 
 public:
-   CSieveOfEratosthenes(unsigned int nSieveSize, unsigned int nMaxPrimes, unsigned int nSieveExtensions, unsigned int nTargetChainLength, unsigned int nTargetBTLength, mpz_class& mpzHash, mpz_class& mpzFixedMultiplier)
+   CSieveOfEratosthenes(unsigned int nSieveSize, unsigned int nPrimorialMultiplier, unsigned int nSieveExtensions, unsigned int nTargetChainLength, unsigned int nTargetBTLength, mpz_class& mpzHash, mpz_class& mpzFixedMultiplier, unsigned int pMult)
     {
         this->nSieveSize = nSieveSize;
 		this->nAllocatedSieveSize = nSieveSize;
@@ -208,8 +171,9 @@ public:
       this->nChainLength = nTargetChainLength;
       this->nBTChainLength = nTargetBTLength;
       this->nSieveLayers = nChainLength + nSieveExtensions;
-      this->nTotalPrimes = vPrimes.size();
-      this->nPrimes = (uint64)nMaxPrimes;
+      this->nTotalPrimes = vPrimesSize;
+	  this->nPrimes = nPrimorialMultiplier*pMult;
+
       this->nPrimeSeq = nMinPrimeSeq;
       this->nCandidateCount = 0;
       this->nCandidateMultiplier = 0;
@@ -223,12 +187,11 @@ public:
       vfCompositeBiTwin = (sieve_word_t *)malloc(nCandidatesBytes);
       vfCompositeCunningham1 = (sieve_word_t *)malloc(nCandidatesBytes);
       vfCompositeCunningham2 = (sieve_word_t *)malloc(nCandidatesBytes);
-        memset(vfCandidates, 0, nCandidatesBytes);
+      memset(vfCandidates, 0, nCandidatesBytes);
       memset(vfCompositeBiTwin, 0, nCandidatesBytes);
       memset(vfCompositeCunningham1, 0, nCandidatesBytes);
       memset(vfCompositeCunningham2, 0, nCandidatesBytes);
 
-      // bitsets that can be combined to obtain the final bitset of candidates
       vfCompositeLayerCC1 = (sieve_word_t *)malloc(nCandidatesBytes);
       vfCompositeLayerCC2 = (sieve_word_t *)malloc(nCandidatesBytes);
 
@@ -269,7 +232,7 @@ public:
     }
 
 
-   void Init(unsigned int nSieveSize, unsigned int nMaxPrimes, unsigned int nSieveExtensions, unsigned int nTargetChainLength, unsigned int nTargetBTLength, mpz_class& mpzHash, mpz_class& mpzFixedMultiplier)
+   void Init(unsigned int nSieveSize, unsigned int nPrimorialMultiplier, unsigned int nSieveExtensions, unsigned int nTargetChainLength, unsigned int nTargetBTLength, mpz_class& mpzHash, mpz_class& mpzFixedMultiplier, unsigned int pMult)
     {
         this->nSieveSize = nSieveSize;
       this->nSieveExtensions = nSieveExtensions;
@@ -278,8 +241,9 @@ public:
       this->nChainLength = nTargetChainLength;
       this->nBTChainLength = nTargetBTLength;
       this->nSieveLayers = nChainLength + nSieveExtensions;
-      this->nTotalPrimes = vPrimes.size();
-      this->nPrimes = (uint64)nMaxPrimes;
+      this->nTotalPrimes = vPrimesSize;
+	  this->nPrimes = nPrimorialMultiplier*pMult;
+
       this->nPrimeSeq = nMinPrimeSeq;
       this->nCandidateCount = 0;
       this->nCandidateMultiplier = 0;
@@ -290,7 +254,7 @@ public:
       this->nCandidatesBytes = nCandidatesWords * sizeof(sieve_word_t);
 		if (nSieveSize > nAllocatedSieveSize)
 		{
-			free(vfCandidates);
+         free(vfCandidates);
          free(vfCompositeBiTwin);
          free(vfCompositeCunningham1);
          free(vfCompositeCunningham2);
@@ -337,21 +301,9 @@ public:
 
 
     // Get total number of candidates for power test
-    unsigned int GetCandidateCount()
-    {
-      //if (nCandidateCount)
-      //   return nCandidateCount;
-
+   unsigned int GetCandidateCount() {
         unsigned int nCandidates = 0;
-#ifdef __GNUC__
-        for (unsigned int i = 0; i < nCandidatesWords; i++)
-            nCandidates += __builtin_popcountl(vfCandidates[i]);
-      for (unsigned int j = 0; j < nSieveExtensions; j++)
-         for (unsigned int i = nCandidatesWords / 2; i < nCandidatesWords; i++)
-            nCandidates += __builtin_popcountl(vfExtendedCandidates[j * nCandidatesWords + i]);
-#else
-        for (unsigned int i = 0; i < nCandidatesWords; i++)
-        {
+      for (unsigned int i = 0; i < nCandidatesWords; i++) {
          sieve_word_t lBits = vfCandidates[i];
             for (unsigned int j = 0; j < nWordBits; j++)
             {
@@ -371,8 +323,6 @@ public:
             }
         }
       }
-#endif
-      //nCandidateCount = nCandidates;
         return nCandidates;
     }
 
@@ -476,10 +426,6 @@ public:
         }
     }
 
-   // Weave the sieve for the next prime in table
-   // Return values:
-   //   True  - weaved another prime; nComposite - number of composites removed
-   //   False - sieve already completed
    bool Weave();
 };
 
