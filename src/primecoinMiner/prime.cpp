@@ -683,8 +683,8 @@ static bool doSubmitBlock(primecoinBlock_t* block, unsigned int nChainLength, mp
     strftime (sNow, 80, "%x-%X",timeinfo);
 
     double shareDiff = GetChainDifficulty(nProbableChainLength);
-
-    printf("%s - %u - SHARE FOUND! - DIFF:%12.9Lf - Th#:%2u TYPE:%u\n", sNow, nPrimorialMultiplier, shareDiff, threadIndex, nCandidateType);
+	std::cout << sNow << " - " << nPrimorialMultiplier << " -  SHARE FOUND! - (Th#:" << threadIndex << ") - DIFF:" << shareDiff << " - TYPE:" << nCandidateType << std::endl;
+//    printf("%s - %u - SHARE FOUND! - DIFF:%12.9Lf - Th#:%2u TYPE:%u\n", sNow, nPrimorialMultiplier, shareDiff, threadIndex, nCandidateType);
     if (nPrintDebugMessages) { printf("HashMultiplier : %llu\n", nTriedMultiplier); }
 
     jhMiner_pushShare_primecoin(blockRawData, block);
