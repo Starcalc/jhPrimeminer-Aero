@@ -1218,9 +1218,9 @@ int jhMiner_main_xptMode()
 				double shareValuePerHour = primeStats.fShareValue / totalRunTime * 3600000.0;
 				uint64 NPS = ((nMaxSieveSize * ((nSieveExtensions/2)+1)) * sievesPerSecond);
 				printf("Val/h:%8f - PPS:%d - SPS:%.03f - ACC:%d - NPS:%u\n", shareValuePerHour, (sint32)primesPerSecond, sievesPerSecond, (sint32)avgCandidatesPerRound, (uint64)NPS);
-            }
 				std::cout << std::setprecision(8);
 				std::cout << std::endl;
+            }
 			}
 			}
 		// wait and check some stats
@@ -1380,8 +1380,8 @@ int main(int argc, char **argv)
 	printf("|  Donations:                                                   |\n");
 	printf("|        XPM: AFv6FpGBqzGUW8puYzitUwZKjSHKczmteY                |\n");
 	printf("|        BTC: 1Ca9qP6tkAEo6EpgtXvuANr936c9FbgBrH                |\n");
-	printf("|===============================================================|n");
-   printf("Launching miner...\n");
+	printf("|===============================================================|\n");
+    printf("Launching miner...\n");
 	// set priority lower so the user still can do other things
 #ifdef _WIN32
 	SetPriorityClass(GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS);
