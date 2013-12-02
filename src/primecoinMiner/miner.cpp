@@ -83,7 +83,7 @@ bool BitcoinMiner(primecoinBlock_t* primecoinBlock, CSieveOfEratosthenes*& psiev
 			return false;
 		}
 		}
-
+		
 	if (appQuitSignal) { printf( "Shutting down mining thread %d.\n", threadIndex);return false; }
 
 		nRoundTests += nTests;
