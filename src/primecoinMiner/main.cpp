@@ -1042,6 +1042,7 @@ static struct termios oldt, newt;
 					}
 					break;
 		}
+	  }
 		Sleep(20);
 	}
 #ifdef _WIN32
@@ -1051,7 +1052,7 @@ static struct termios oldt, newt;
     tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
     return 0;
 #endif
-}
+
 }
 /*
 * Mainloop when using getwork() mode

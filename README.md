@@ -31,13 +31,13 @@ Ubuntu:
 
 apt-get install build-essential libssl-dev openssl git libgmp libgmp-dev
 
-git clone https://github.com/clintar/jhPrimeminer.git
+git clone https://github.com/clintar/jhPrimeminer-Aero.git
 
 cd jhPrimeminer
 
 make
 
-
+*** Or follow this: https://bitcointalk.org/index.php?topic=359312.msg3844664
 
 If you found this helpful PLEASE support my work.
 
