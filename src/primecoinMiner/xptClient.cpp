@@ -147,7 +147,7 @@ void xptClient_sendWorkerLogin(xptClient_t* xptClient)
 	// build the packet
 	bool sendError = false;
 	xptPacketbuffer_beginWritePacket(xptClient->sendBuffer, XPT_OPC_C_AUTH_REQ);
-	xptPacketbuffer_writeU32(xptClient->sendBuffer, &sendError, 5);								// version
+	xptPacketbuffer_writeU32(xptClient->sendBuffer, &sendError, 2);								// version
 	xptPacketbuffer_writeString(xptClient->sendBuffer, xptClient->username, 128, &sendError);	// username
 	xptPacketbuffer_writeString(xptClient->sendBuffer, xptClient->password, 128, &sendError);	// password
 	xptPacketbuffer_writeU32(xptClient->sendBuffer, &sendError, xptClient->payloadNum);			// payloadNum

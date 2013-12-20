@@ -805,7 +805,7 @@ void jhMiner_parseCommandline(int argc, char **argv)
          cIdx++;
       } else if (memcmp(argument, "-layers", 8)==0) {
 		  commandlineInput.targetOverride = atoi(argv[cIdx]);
-		  if (commandlineInput.targetOverride < 10)  { commandlineInput.targetOverride = 10; }
+		  if (commandlineInput.targetOverride < 6)  { commandlineInput.targetOverride = 6; }
 		  if (commandlineInput.targetOverride > 12)  { commandlineInput.targetOverride = 12; }
 		  cIdx++;
 	  } else if (memcmp(argument, "-split", 7)==0) {
@@ -1488,7 +1488,7 @@ int main(int argc, char **argv)
 		primeStats.chainCounter2[primeStats.nPrimorials[i]][0] = 1;
 	}
 	// setup thread count and print info
-	nonceStep = commandlineInput.numThreads;
+
 	std::cout << "Using " << commandlineInput.numThreads << " threads" << std::endl;
 	std::cout << "Username: " << jsonRequestTarget.authUser << std::endl;
 	std::cout << "Password: " << jsonRequestTarget.authPass << std::endl;
