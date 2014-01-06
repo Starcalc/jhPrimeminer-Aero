@@ -253,9 +253,11 @@ bool jhMiner_pushShare_primecoin(uint8 data[256], primecoinBlock_t* primecoinBlo
 		// todo: Set stuff like sieve size
 		if( workData.xptClient && !workData.xptClient->disconnected)
 			xptClient_foundShare(workData.xptClient, xptShareToSubmit);
+		        return true;
 		else
 		{
 			std::cout << "Share submission failed. The client is not connected to the pool." << std::endl;
+		        return false;
 		}
 }
 }
